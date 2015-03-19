@@ -31,7 +31,7 @@ add_dependencies(${LIBRARY_NAME}plugins kmsgstcommons)
 include_directories(
   ${gstreamer-1.0_INCLUDE_DIRS}
   ${gstreamer-base-1.0_SOURCE_DIRS}
-  ${gstreamer-sdp-1.0_SOURCE_DIRS}
+  ${gstreamer-sdp-1.0_INCLUDE_DIRS}
   ${gstreamer-pbutils-1.0_SOURCE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
