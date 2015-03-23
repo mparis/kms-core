@@ -1773,9 +1773,7 @@ kms_base_rtp_endpoint_rtpbin_new_jitterbuffer (GstElement * rtpbin,
 
   if (ssrc == self->priv->video_ssrc) {
     g_object_set (jitterbuffer, "do-lost", TRUE,
-        "do-retransmission", self->priv->rtcp_nack,
-        "rtx-next-seqnum", FALSE,
-        "rtx-max-retries", 0, "rtp-max-dropout", -1, NULL);
+        "do-retransmission", self->priv->rtcp_nack, NULL);
   }
 
   KMS_ELEMENT_UNLOCK (self);
