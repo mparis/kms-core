@@ -3,6 +3,7 @@ set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 include(GLibHelpers)
 
 add_subdirectory(commons)
+add_subdirectory(tracers)
 
 set(KMS_CORE_SOURCES
   kmscore.c
@@ -41,6 +42,7 @@ include_directories(
 
 target_link_libraries(${LIBRARY_NAME}plugins
   kmsgstcommons
+  kmstracers
   ${gstreamer-1.5_LIBRARIES}
   ${gstreamer-base-1.5_LIBRARIES}
   ${gstreamer-sdp-1.5_LIBRARIES}
