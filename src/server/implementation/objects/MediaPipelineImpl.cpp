@@ -50,6 +50,41 @@ MediaPipelineImpl::busMessage (GstMessage *message)
   }
 }
 
+static void
+stream_status_cb (GstBus *bus, GstMessage *msg, gpointer user_data)
+{
+  GstTaskPool *pool = (GstTaskPool *) user_data;
+  GstStreamStatusType type;
+  const gchar *element_name = GST_OBJECT_NAME (GST_PAD_PARENT (msg->src) );
+
+  gst_message_parse_stream_status (msg, &type, NULL);
+
+  if (type == GST_STREAM_STATUS_TYPE_CREATE) {
+    GstTask *task = GST_PAD_TASK (GST_MESSAGE_SRC (msg) );
+    gboolean ret;
+
+    if (!g_str_has_prefix (element_name, "queue") &&
+//        !g_str_has_prefix (element_name, "rtpjitterbuffer") /*&&*/ /* owns 1 th */
+        !g_str_has_prefix (element_name, "dtls") &&
+        !g_str_has_prefix (element_name, "nicesrc")) {
+      GST_ERROR ("%s NOT USING TASK POOL", element_name);
+      return;
+    }
+
+    /* Improve too much the latency */
+    if (g_str_has_prefix (element_name, "nicesrc0")) {
+      GST_ERROR ("%s Master nice src not using task pool", element_name);
+      return;
+    }
+
+    GST_ERROR ("Set pool to: %s", element_name);
+
+    gst_task_set_pool (task, pool);
+    ret = gst_task_set_scheduleable (task, TRUE);
+    g_assert (ret);
+  }
+}
+
 void MediaPipelineImpl::postConstructor ()
 {
   GstBus *bus;
@@ -64,6 +99,12 @@ void MediaPipelineImpl::postConstructor ()
                             std::placeholders::_2) ),
                       std::dynamic_pointer_cast<MediaPipelineImpl>
                       (shared_from_this() ) );
+
+  /* TaskPool management */
+  gst_bus_enable_sync_message_emission (bus);
+  g_signal_connect (G_OBJECT (bus), "sync-message::stream-status",
+                    G_CALLBACK (stream_status_cb), pool);
+
   g_object_unref (bus);
 }
 
@@ -71,6 +112,10 @@ MediaPipelineImpl::MediaPipelineImpl (const boost::property_tree::ptree &config)
   : MediaObjectImpl (config)
 {
   GstClock *clock;
+
+  /* inmediate-TODO: do configurable */
+  pool = gst_task_pool_new_full (1, FALSE);
+  gst_task_pool_prepare (pool, NULL);
 
   pipeline = gst_pipeline_new (NULL);
 
@@ -102,6 +147,8 @@ MediaPipelineImpl::~MediaPipelineImpl ()
   g_object_unref (bus);
   gst_element_set_state (pipeline, GST_STATE_NULL);
   g_object_unref (pipeline);
+  gst_task_pool_cleanup (pool);
+  gst_object_unref (pool);
 }
 
 std::string MediaPipelineImpl::getGstreamerDot (

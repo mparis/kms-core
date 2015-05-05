@@ -46,6 +46,7 @@ protected:
   virtual void postConstructor ();
 private:
 
+  GstTaskPool *pool;
   GstElement *pipeline;
 
   gulong busMessageHandler;
