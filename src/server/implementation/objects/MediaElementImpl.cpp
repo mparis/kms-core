@@ -222,7 +222,7 @@ _media_element_pad_added (GstElement *elem, GstPad *pad, gpointer data)
 {
   MediaElementImpl *self = (MediaElementImpl *) data;
 
-  GST_LOG_OBJECT (pad, "Pad added");
+  GST_DEBUG_OBJECT (pad, "Pad added");
 
   if (GST_PAD_IS_SRC (pad) ) {
     std::unique_lock<std::recursive_mutex> lock (self->sinksMutex);
@@ -321,7 +321,7 @@ MediaElementImpl::~MediaElementImpl ()
 {
   std::shared_ptr<MediaPipelineImpl> pipe;
 
-  GST_LOG ("Deleting media element %s", getName().c_str () );
+  GST_DEBUG ("Deleting media element %s", getName().c_str () );
 
   disconnectAll();
 
@@ -578,7 +578,7 @@ MediaElementImpl::performConnection (std::shared_ptr
   src = data->getSourcePad ();
 
   if (!src) {
-    GST_TRACE ("Still waiting for src pad %s:%s", getName().c_str(),
+    GST_DEBUG ("Still waiting for src pad %s:%s", getName().c_str(),
                data->getSourcePadName () );
     return;
   }
@@ -588,7 +588,7 @@ MediaElementImpl::performConnection (std::shared_ptr
   if (sink) {
     GstPadLinkReturn ret;
 
-    GST_TRACE ("Linking %s:%s -> %s:%s", getName().c_str(),
+    GST_DEBUG ("Linking %s:%s -> %s:%s", getName().c_str(),
                data->getSourcePadName (), data->getSink()->getName().c_str(),
                data->getSinkPadName ().c_str() );
 
@@ -598,12 +598,12 @@ MediaElementImpl::performConnection (std::shared_ptr
       GST_WARNING ("Cannot link pads: %" GST_PTR_FORMAT " and %" GST_PTR_FORMAT
                    " reason: %s", src, sink, gst_pad_link_get_name (ret) );
     } else {
-      GST_TRACE ("Link done");
+      GST_DEBUG ("Link done");
     }
 
     g_object_unref (sink);
   } else {
-    GST_TRACE ("Still waiting for sink pad %s:%s",
+    GST_DEBUG ("Still waiting for sink pad %s:%s",
                data->getSink()->getName().c_str(),
                data->getSinkPadName ().c_str() );
   }
